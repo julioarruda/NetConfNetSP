@@ -52,3 +52,25 @@ stages:
         PathtoPublish: '$(build.artifactstagingdirectory)'
       condition: succeededOrFailed()
 
+
+- stage: Dev
+  displayName: Desenvolvimento
+  dependsOn: Build
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Microsoft Azure Sponsorship (fbef5108-6185-4658-9f2b-7a5f7d58b456)'
+        appType: 'webApp'
+        WebAppName: 'groffe2'
+        deployToSlotOrASE: true
+        ResourceGroupName: 'netconfsjc'
+        SlotName: 'DEV'
+        packageForLinux: '$(Pipeline.Workspace)/drop/**/*.zip'
+
+
