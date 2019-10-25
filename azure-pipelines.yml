@@ -6,45 +6,49 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+stages:
+- stage: Build
+  variables:
+    buildProjects: '**/*.csproj'
+    buildConfiguration: 'release'
+    testProject: '**/*[Tt]ests/*.csproj'
 
-variables:
-  buildProjects: '**/*.csproj'
-  buildConfiguration: 'release'
-  testProject: '**/*[Tt]ests/*.csproj'
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'ubuntu-latest'
 
-steps:
-- task: DotNetCoreCLI@2
-  displayName: Restore
-  inputs:
-    command: restore
-    projects: '${{ variables.buildProjects }}'
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: Restore
+      inputs:
+        command: restore
+        projects: '${{ variables.buildProjects }}'
 
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    projects: '${{ variables.buildProjects }}'
-    arguments: '--configuration ${{ variables.buildConfiguration }}'
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        projects: '${{ variables.buildProjects }}'
+        arguments: '--configuration ${{ variables.buildConfiguration }}'
 
-- task: DotNetCoreCLI@2
-  displayName: Test
-  inputs:
-    command: test
-    projects: '${{ variables.testProject }}'
-    arguments: '--configuration ${{ variables.buildConfiguration }}'
+    - task: DotNetCoreCLI@2
+      displayName: Test
+      inputs:
+        command: test
+        projects: '${{ variables.testProject }}'
+        arguments: '--configuration ${{ variables.buildConfiguration }}'
 
-- task: DotNetCoreCLI@2
-  displayName: Publish
-  inputs:
-    command: publish
-    publishWebProjects: True
-    arguments: '--configuration ${{ variables.buildConfiguration }} --output $(build.artifactstagingdirectory)'
-    zipAfterPublish: True
+    - task: DotNetCoreCLI@2
+      displayName: Publish
+      inputs:
+        command: publish
+        publishWebProjects: True
+        arguments: '--configuration ${{ variables.buildConfiguration }} --output $(build.artifactstagingdirectory)'
+        zipAfterPublish: True
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
-  inputs:
-    PathtoPublish: '$(build.artifactstagingdirectory)'
-  condition: succeededOrFailed()
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact'
+      inputs:
+        PathtoPublish: '$(build.artifactstagingdirectory)'
+      condition: succeededOrFailed()
 
