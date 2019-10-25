@@ -77,4 +77,49 @@ stages:
               SlotName: 'DEV'
               packageForLinux: '$(Pipeline.Workspace)/drop/**/*.zip'
 
+- stage: HMG
+  displayName: Homologação
+  dependsOn: Dev
+  jobs:
+  - deployment: deployToHMG
+    displayName: HMG
+    environment: 'Homologacao'  
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureRmWebAppDeployment@4
+            inputs:
+              ConnectionType: 'AzureRM'
+              azureSubscription: 'Microsoft Azure Sponsorship (fbef5108-6185-4658-9f2b-7a5f7d58b456)'
+              appType: 'webApp'
+              WebAppName: 'groffe2'
+              deployToSlotOrASE: true
+              ResourceGroupName: 'netconfsjc'
+              SlotName: 'HMG'
+              packageForLinux: '$(Pipeline.Workspace)/drop/**/*.zip'
+
+- stage: PRD
+  displayName: Produção
+  dependsOn: HMG
+  jobs:
+  - deployment: deployToPRD
+    displayName: PRD
+    environment: 'Producao'  
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureRmWebAppDeployment@4
+            inputs:
+              ConnectionType: 'AzureRM'
+              azureSubscription: 'Microsoft Azure Sponsorship (fbef5108-6185-4658-9f2b-7a5f7d58b456)'
+              appType: 'webApp'
+              WebAppName: 'groffe2'
+              packageForLinux: '$(Pipeline.Workspace)/drop/**/*.zip'
+
 
